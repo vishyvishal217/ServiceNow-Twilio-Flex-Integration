@@ -6,15 +6,15 @@
         <default_operation_uri/>
         <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
         <http_method>POST</http_method>
-        <name>Find User From Phone</name>
+        <name>Find User Emp ID</name>
         <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
 	var body = {};
 		response.setContentType('application/json');
 		
 		//read phone number in from Twilio request
 		var requestBody = request.body.data;
-		var phone = requestBody.phoneNumber;
-			
+		
+		var empid = requestBody.empid;		
 	
 	
 
@@ -23,8 +23,8 @@
 	
 		var user_gr = new GlideRecord('sys_user');
 		user_gr.addActiveQuery();
+		user_gr.addEncodedQuery("employee_number="+empid);
 		
-		user_gr.addEncodedQuery("phone="+ phone + "^ORhome_phone=" + phone + "^ORmobile_phone=" + phone);
 		user_gr.query();
 		
 		//exclude match if there is more than one result as this is likely a shared phone nnumber
@@ -37,8 +37,7 @@
 			body.title = user_gr.title.getDisplayValue();
 			body.department = user_gr.department.getDisplayValue();
 			body.location = user_gr.location.getDisplayValue();
-			body.sys_id = user_gr.sys_id.getDisplayValue();
-			
+			//body.sys_id = user_gr.sys_id.getDisplayValue();
 			body.emp_exist="yes";
 			body.empid=user_gr.employee_number;
 			//lookup user tickets and add them to response body
@@ -68,34 +67,35 @@
 				{
 				//unable to find user
 				body.emp_exist="no";
+					//body.temp=user_gr.getRowCount();
 				response.setStatus(200);
 			}
 			
 			response.setBody(body);
 		})(request, response);]]></operation_script>
-        <operation_uri>/api/x_8725_servicenow/twilio_flex/find_user_phone</operation_uri>
+        <operation_uri>/api/x_8725_servicenow/twilio_flex/find_user_empid</operation_uri>
         <produces>application/json,application/xml,text/xml</produces>
         <produces_customized>false</produces_customized>
-        <relative_path>/find_user_phone</relative_path>
+        <relative_path>/find_user_empid</relative_path>
         <request_example/>
         <requires_acl_authorization>true</requires_acl_authorization>
         <requires_authentication>true</requires_authentication>
         <requires_snc_internal_role>true</requires_snc_internal_role>
         <short_description/>
         <sys_class_name>sys_ws_operation</sys_class_name>
-        <sys_created_by>admin</sys_created_by>
-        <sys_created_on>2019-06-27 21:14:26</sys_created_on>
+        <sys_created_by>vviswanathan</sys_created_by>
+        <sys_created_on>2021-05-17 18:43:01</sys_created_on>
         <sys_customer_update>false</sys_customer_update>
-        <sys_id>698ab369db1233006a0f924bdb961940</sys_id>
-        <sys_mod_count>47</sys_mod_count>
-        <sys_name>Find User From Phone</sys_name>
+        <sys_id>c5a0347b1bc8bc149c724159cc4bcb45</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>Find User Emp ID</sys_name>
         <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
         <sys_policy/>
         <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
-        <sys_update_name>sys_ws_operation_698ab369db1233006a0f924bdb961940</sys_update_name>
+        <sys_update_name>sys_ws_operation_c5a0347b1bc8bc149c724159cc4bcb45</sys_update_name>
         <sys_updated_by>vviswanathan</sys_updated_by>
-        <sys_updated_on>2021-05-20 13:50:00</sys_updated_on>
+        <sys_updated_on>2021-05-24 16:59:36</sys_updated_on>
         <web_service_definition display_value="Twilio Flex">017a7369db1233006a0f924bdb961940</web_service_definition>
         <web_service_version/>
     </sys_ws_operation>

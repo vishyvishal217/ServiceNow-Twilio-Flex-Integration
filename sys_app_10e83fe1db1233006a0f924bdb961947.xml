@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update table="sys_app">
     <sys_app action="INSERT_OR_UPDATE">
         <active>true</active>
+        <can_edit_in_studio>false</can_edit_in_studio>
         <enforce_license>log</enforce_license>
+        <guided_setup_guid/>
         <js_level>helsinki_es5</js_level>
         <licensable>true</licensable>
         <license_category>none</license_category>
@@ -38,7 +40,9 @@
         <chunk_size_bytes>734003</chunk_size_bytes>
         <compressed>true</compressed>
         <content_type>image/jpeg</content_type>
+        <encryption_context/>
         <file_name>logo</file_name>
+        <hash/>
         <image_height>300</image_height>
         <image_width>292</image_width>
         <size_bytes>5966</size_bytes>
@@ -52,6 +56,7 @@
         <sys_updated_on>2019-06-27 21:21:47</sys_updated_on>
         <table_name>ZZ_YYsys_app</table_name>
         <table_sys_id>10e83fe1db1233006a0f924bdb961947</table_sys_id>
+        <u_record>10e83fe1db1233006a0f924bdb961947</u_record>
     </sys_attachment>
     <sys_attachment_doc action="INSERT_OR_UPDATE">
         <data>H4sIAAAAAAAAAA==</data>

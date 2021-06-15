@@ -6,31 +6,48 @@
         <default_operation_uri/>
         <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
         <http_method>POST</http_method>
-        <name>Update Ticket</name>
+        <name>Create Child Ticket</name>
         <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
 	var body = {};
 		response.setContentType('application/json');
-		
-		//set variables from Twilio 
 		var requestBody = request.body.data;
-		var ticket_number = requestBody.ticketNumber;
-		var comment = requestBody.comment;
-		
-		//lookup ticket and add comment
-		var ticket_gr = new GlideRecord('incident');
-		ticket_gr.get('number', ticket_number);
-		
-		ticket_gr.comments = comment;
-		ticket_gr.state =2;
-		ticket_gr.update();
-		
+		//set variables from Twilio 
+// 		var requestBody = request.body.data;
+// 		var parent_id = requestBody.ticketNumber;
+// 		var short_description= requestBody.short_description;
+// 		//lookup ticket and add comment
+// 		var ticket_gr = new GlideRecord('incident');
+// 		ticket_gr.initialize();
+// 		//ticket_gr.get('number', parent_id);
+// 		ticket_gr.parent_incident = parent_id;
+// 		ticket_gr.short_description = short_description;
+// 		ticket_gr.state =1;
+// 		ticket_gr.caller_id.setDisplayValue('Bijay Mohanty');
+// 		ticket_gr.insert();
+		var incident = new GlideRecord("incident");
+		incident.initialize();
+		incident.short_description =requestBody.short_description;
+		incident.description = requestBody.description;
+		incident.cmdb_ci = requestBody.cmdb_ci;//"02241ff9db90d894cffad602ca9619bc";
+		incident.priority = requestBody.priority_number;
+		incident.u_requested_by =requestBody.u_requested_by;
+		incident.opened_by = "4ab6611adbb7a0d039d32d89139619b2";//(Flex.twilio);
+		incident.parent_incident=requestBody.parent_inc_sysid;
+		incident.u_symptom=requestBody.u_symptom;
+		incident.contact_type="Phone";
+	
+	
+		//incident.parent_incident = current.getUniqueValue(); //This is what add the parent relation to the current record.
+	incident.insert();
+		body.child_incnumber=incident.number;
+		//body.op=incident;
 		response.setStatus(200);
 		response.setBody(body);
 	})(request, response);]]></operation_script>
-        <operation_uri>/api/x_8725_servicenow/twilio_flex/update_ticket</operation_uri>
+        <operation_uri>/api/x_8725_servicenow/twilio_flex/create_ticket</operation_uri>
         <produces>application/json,application/xml,text/xml</produces>
         <produces_customized>false</produces_customized>
-        <relative_path>/update_ticket</relative_path>
+        <relative_path>/create_ticket</relative_path>
         <request_example/>
         <requires_acl_authorization>true</requires_acl_authorization>
         <requires_authentication>true</requires_authentication>
@@ -39,15 +56,17 @@
         <sys_class_name>sys_ws_operation</sys_class_name>
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2019-07-23 21:44:55</sys_created_on>
+        <sys_customer_update>false</sys_customer_update>
         <sys_id>27ea3146dbf233003380eb41ca961957</sys_id>
-        <sys_mod_count>3</sys_mod_count>
-        <sys_name>Update Ticket</sys_name>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>Create Child Ticket</sys_name>
         <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
         <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
         <sys_update_name>sys_ws_operation_27ea3146dbf233003380eb41ca961957</sys_update_name>
-        <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-07-30 22:32:22</sys_updated_on>
+        <sys_updated_by>vviswanathan</sys_updated_by>
+        <sys_updated_on>2021-05-21 18:21:05</sys_updated_on>
         <web_service_definition display_value="Twilio Flex">017a7369db1233006a0f924bdb961940</web_service_definition>
         <web_service_version/>
     </sys_ws_operation>

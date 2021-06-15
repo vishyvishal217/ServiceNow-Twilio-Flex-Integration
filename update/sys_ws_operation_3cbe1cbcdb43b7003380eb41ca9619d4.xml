@@ -7,93 +7,115 @@
         <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
         <http_method>POST</http_method>
         <name>Task Status Change Event</name>
-        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
-  response.setContentType("application/json");
-  response.setStatus(200);
-  var body = {};
+        <operation_script><![CDATA[(function process( /*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+    response.setContentType("application/json");
+    response.setStatus(200);
+    var body = {};
 
-  //parse worker, task, and eventType data out from Twilio data
-  var requestBody = request.body.data;
-  var workerEmail = requestBody.worker.email;
-  var task = requestBody.task;
-  var eventType = requestBody.eventType;
+    //parse worker, task, and eventType data out from Twilio data
+    var requestBody = request.body.data;
+    var workerEmail = requestBody.worker.email;
+    var task = requestBody.task;
+    var eventType = requestBody.eventType;
 
-  switch (eventType) {
-    case "accept_task":
-      if (task.attributes.ticket_number && task.attributes.ticket_number.toString().trim() != "") {
-        //This case is when a reservation is accepted and the caller is asking about an existing ticket. In this use case we want to popup the existing ticket instead of creating a new one
+    switch (eventType) {
+        case "accept_task":
+            if (task.attributes.ticket_number && task.attributes.ticket_number.toString().trim() != "") {
+                //This case is when a reservation is accepted and the caller is asking about an existing ticket. In this use case we want to popup the existing ticket instead of creating a new one
 
-        //lookup user from worker email address coming from Twilio
-        var user_gr = new GlideRecord("sys_user");
-        user_gr.get("email", workerEmail);
+                //lookup user from worker email address coming from Twilio
+                var user_gr = new GlideRecord("sys_user");
+                user_gr.get("email", workerEmail);
 
-        //lookup ticket using ticket number coming from Twilio
-        var inc_gr = new GlideRecord("incident");
-        inc_gr.addQuery("number", task.attributes.ticket_number.toString().trim());
-        inc_gr.query();
+                //lookup ticket using ticket number coming from Twilio
+                var inc_gr = new GlideRecord("incident");
+                //  var inc_gr = new GlideRecord("new_call");
+                inc_gr.addQuery("number", task.attributes.ticket_number.toString().trim());
+                inc_gr.query();
 
-        if (inc_gr.next()) {
-          inc_gr.x_8725_servicenow_twilio_integration_information = "twilio_assigned_to: " + user_gr.sys_id;
-          inc_gr.update();
-        }
-      } else {
-        //This case is when a reservation is accepted and the caller is wanting to report a new issue
+                if (inc_gr.next()) {
+                    inc_gr.x_8725_servicenow_twilio_integration_information = "twilio_assigned_to: " + user_gr.sys_id;
+                    inc_gr.update();
+                }
+            } else {
+                //This case is when a reservation is accepted and the caller is wanting to report a new issue
 
-        //lookup user from worker email address coming from Twilio
-        var user_gr = new GlideRecord("sys_user");
-        user_gr.get("email", workerEmail);
+                //lookup user from worker email address coming from Twilio
+                var user_gr2 = new GlideRecord("sys_user");
+                user_gr2.get("email", workerEmail);
 
-        //create new incident with the caller as the person making the phone call and the assigned to being the worker from Twilio
-        var inc_gr = new GlideRecord("incident");
-        inc_gr.initialize();
-        inc_gr.assigned_to = user_gr.sys_id;
-        inc_gr.contact_type = "twilio_flex";
-        inc_gr.caller_id = task.attributes.user_sys_id.toString().trim();
-        inc_gr.x_8725_servicenow_twilio_integration_information = task.sid.toString().trim();
-        inc_gr.insert();
-      }
-      break;
-    case "complete_task":
-      if (task.attributes.ticket_number && task.attributes.ticket_number.toString().trim() != "") {
-        //This case is when a reservation is completed and the caller was asking about an existing ticket.
+                //create new incident with the caller as the person making the phone call and the assigned to being the worker from Twilio
+//                 var inc_gr = new GlideRecord("incident");
+// //                  var inc_gr = new GlideRecord("new_call");
+//                         inc_gr.initialize();
+//                         inc_gr.assigned_to = user_gr.sys_id;
+//                         inc_gr.contact_type = "twilio_flex";
+//                       //  inc_gr.caller = task.attributes.user_sys_id.toString().trim();
+//                 		inc_gr.caller_id = task.attributes.user_sys_id.toString().trim();
+//                 		inc_gr.u_requested_by=  task.attributes.user_sys_id.toString().trim();
+//                 		  inc_gr.opened_by=  task.attributes.user_sys_id.toString().trim();
+//                         inc_gr.x_8725_servicenow_twilio_integration_information = task.sid.toString().trim();
+//                         inc_gr.insert();
+                gs.info("Here");
+                var new_call_gr = new GlideRecord("new_call");
+                //var worker = gs.getUserID();
+                new_call_gr.initialize();
+                new_call_gr.contact_type = "Twilio Flex";
+                new_call_gr.caller = task.attributes.user_sys_id.toString().trim();
+                //new_call_gr.call_type = 'incident';
+                new_call_gr.opened_by = task.attributes.user_sys_id.toString().trim();
+				//new_call_gr.opened_by = gs.getUserID();
+               new_call_gr.u_twilio_assigned_to = user_gr2.sys_id;//worker;
+                new_call_gr.u_requested_for = task.attributes.user_sys_id.toString().trim();
+                //new_call_gr.short_description = 'testing';
+                //new_call_gr.description = 'testing';
+				new_call_gr.u_twilio_int_information = task.sid.toString().trim();
+				new_call_gr.u_twilio_active = true;
 
-        //lookup user from worker email address coming from Twilio
-        var user_gr = new GlideRecord("sys_user");
-        user_gr.get("email", workerEmail);
+//				new_call_gr.x_8725_servicenow_twilio_integration_information = task.sid.toString().trim();
+                new_call_gr.insert();
+            }
+            break;
+        case "complete_task":
+            if (task.attributes.ticket_number && task.attributes.ticket_number.toString().trim() != "") {
+                //This case is when a reservation is completed and the caller was asking about an existing ticket.
 
-        //lookup ticket using ticket number coming from Twilio
-        var inc_gr = new GlideRecord("incident");
-        inc_gr.addQuery("number", task.attributes.ticket_number.toString().trim());
-        inc_gr.query();
+                //lookup user from worker email address coming from Twilio
+                var user_gr = new GlideRecord("sys_user");
+                user_gr.get("email", workerEmail);
 
-        if (inc_gr.next()) {
-          inc_gr.x_8725_servicenow_twilio_integration_information = inc_gr.x_8725_servicenow_twilio_integration_information + ", call_completed";
-          inc_gr.x_8725_servicenow_twilio_integration_information = inc_gr.x_8725_servicenow_twilio_integration_information.replace(", twilio_assigned_to: " + user_gr.sys_id, "");
-          inc_gr.update();
-        }
-      } else {
-        //This case is when a reservation is completed and the caller was wanting to report a new issue
+                //lookup ticket using ticket number coming from Twilio
+                var new_call_gr2 = new GlideRecord("new_call");
+                inc_gr.addQuery("number", task.attributes.ticket_number.toString().trim());
+                inc_gr.query();
 
-        //lookup user from worker email address coming from Twilio
-        var user_gr = new GlideRecord("sys_user");
-        user_gr.get("email", workerEmail);
+                if (new_call_gr2.next()) {
+                    new_call_gr2.u_twilio_int_information = new_call_gr2.u_twilio_int_information + ", call_completed";
+                    new_call_gr2.u_twilio_int_information = new_call_gr2.u_twilio_int_information.replace(", twilio_assigned_to: " + user_gr.sys_id, "");
+                    new_call_gr2.update();
+                }
+            } else {
+                //This case is when a reservation is completed and the caller was wanting to report a new issue
 
-        //lookup ticket using ticket number coming from Twilio
-        var inc_gr = new GlideRecord("incident");
-        inc_gr.addQuery("correlation_id", "CONTAINS", task.sid.toString().trim());
-        inc_gr.query();
+                //lookup user from worker email address coming from Twilio
+                var user_gr = new GlideRecord("sys_user");
+                user_gr.get("email", workerEmail);
 
-        if (inc_gr.next()) {
-          inc_gr.x_8725_servicenow_twilio_integration_information = inc_gr.x_8725_servicenow_twilio_integration_information + ", call_completed";
-          inc_gr.x_8725_servicenow_twilio_integration_information = inc_gr.x_8725_servicenow_twilio_integration_information.replace(", twilio_assigned_to: " + user_gr.sys_id, "");
-          inc_gr.update();
-        }
-      }
-      break;
-  }
-  response.setBody(body);
-})(request, response);
-]]></operation_script>
+                //lookup ticket using ticket number coming from Twilio
+                var new_call_gr3 = new GlideRecord("new_call");
+                new_call_gr3.addQuery("u_twilio_int_information", "CONTAINS", task.sid.toString().trim());
+                new_call_gr3.query();
+
+                if (new_call_gr3.next()) {
+                    new_call_gr3.u_twilio_int_information = new_call_gr3.u_twilio_int_information + ", call_completed";
+                    new_call_gr3.u_twilio_int_information = new_call_gr3.u_twilio_int_information.replace(", twilio_assigned_to: " + user_gr.sys_id, "");
+                    new_call_gr3.update();
+                }
+            }
+            break;
+    }
+    response.setBody(body);
+})(request, response);]]></operation_script>
         <operation_uri>/api/x_8725_servicenow/twilio_flex/status_v2</operation_uri>
         <produces>application/json,application/xml,text/xml</produces>
         <produces_customized>false</produces_customized>
@@ -106,15 +128,17 @@
         <sys_class_name>sys_ws_operation</sys_class_name>
         <sys_created_by>justin.young</sys_created_by>
         <sys_created_on>2019-08-01 04:11:33</sys_created_on>
+        <sys_customer_update>false</sys_customer_update>
         <sys_id>3cbe1cbcdb43b7003380eb41ca9619d4</sys_id>
-        <sys_mod_count>7</sys_mod_count>
+        <sys_mod_count>40</sys_mod_count>
         <sys_name>Task Status Change Event</sys_name>
         <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
         <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
         <sys_update_name>sys_ws_operation_3cbe1cbcdb43b7003380eb41ca9619d4</sys_update_name>
-        <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-08-03 17:39:55</sys_updated_on>
+        <sys_updated_by>vviswanathan</sys_updated_by>
+        <sys_updated_on>2021-06-08 21:08:06</sys_updated_on>
         <web_service_definition display_value="Twilio Flex">017a7369db1233006a0f924bdb961940</web_service_definition>
         <web_service_version/>
     </sys_ws_operation>

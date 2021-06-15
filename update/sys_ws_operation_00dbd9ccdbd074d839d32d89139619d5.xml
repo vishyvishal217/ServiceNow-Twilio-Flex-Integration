@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
+        <http_method>POST</http_method>
+        <name>Fetch Banner Incidents</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+		var body = {};
+    // implement resource here
+		var tickets =[];
+		var ticket_count=0;
+		var inc_gr = new GlideRecord('incident');
+		//inc_gr.addActiveQuery();
+		//inc_gr.addQuery('priority',1);
+		inc_gr.addEncodedQuery("active=true^u_portal_announcement=true");
+		inc_gr.query();
+		while(inc_gr.next())
+				{
+					var ticket = {};
+					ticket.number = inc_gr.number.getDisplayValue();
+					ticket.u_portal_description = inc_gr.u_portal_description.getDisplayValue();
+					ticket.short_description = inc_gr.short_description.getDisplayValue();
+					ticket.description=inc_gr.description.getDisplayValue();
+					ticket.state = inc_gr.state.getDisplayValue();
+					ticket.priority = inc_gr.priority.getDisplayValue();
+					ticket.priority_number=inc_gr.priority;
+					ticket_count += 1;
+					ticket.cmdb_ci=inc_gr.cmdb_ci;	
+					ticket.incident_sysid=inc_gr.sys_id.getDisplayValue();
+					ticket.u_symptom=inc_gr.u_symptom;
+					
+					
+					
+					tickets.push(ticket);
+					
+				}
+		body.ticket_count=ticket_count;
+		body.tickets = tickets;
+		response.setBody(body);
+		response.setStatus(200);
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/x_8725_servicenow/twilio_flex/fetch_banner_incidents</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/fetch_banner_incidents</relative_path>
+        <request_example/>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>true</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>vviswanathan</sys_created_by>
+        <sys_created_on>2021-05-18 16:42:23</sys_created_on>
+        <sys_customer_update>false</sys_customer_update>
+        <sys_id>00dbd9ccdbd074d839d32d89139619d5</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>Fetch Banner Incidents</sys_name>
+        <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
+        <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
+        <sys_update_name>sys_ws_operation_00dbd9ccdbd074d839d32d89139619d5</sys_update_name>
+        <sys_updated_by>vviswanathan</sys_updated_by>
+        <sys_updated_on>2021-05-21 18:16:24</sys_updated_on>
+        <web_service_definition display_value="Twilio Flex">017a7369db1233006a0f924bdb961940</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

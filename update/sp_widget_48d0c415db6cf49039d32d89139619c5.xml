@@ -7,7 +7,7 @@
 	$scope.runtime_url = $sce.trustAsResourceUrl( c.data.runtime );
 	
 	glideUserSession.loadCurrentUser().then(function(currentUser) {
-		spUtil.recordWatch($scope, 'incident', "active=true^contact_type=twilio_flex^assigned_to="+currentUser.userID+"^NQactive=true^x_8725_servicenow_twilio_integration_informationLIKE"+currentUser.userID, function(name,data) {
+		spUtil.recordWatch($scope, 'new_call', "u_twilio_active=true^u_twilio_assigned_to="+currentUser.userID, function(name,data) {
 			spUtil.update($scope);
 		});
 	});
@@ -82,19 +82,22 @@
         <docs/>
         <field_list/>
         <has_preview>false</has_preview>
-        <id>twilio_flex_workspace</id>
+        <id>twilio_flex_workspace_call_module</id>
         <internal>false</internal>
         <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
-        <name>Twilio Flex Workspace</name>
+        <name>Twilio Flex Workspace Call Module</name>
         <option_schema/>
         <public>false</public>
         <roles/>
         <script><![CDATA[(function() {
 	data.calls =[];
 	data.runtime = "https://flex.twilio.com/"+gs.getProperty('twilio.flex.runtime');
-	
-	var calls_gr = new GlideRecord('incident');
-	calls_gr.addEncodedQuery('active=true^contact_type=twilio_flex^assigned_toDYNAMIC90d1921e5f510100a9ad2572f2b477fe^x_8725_servicenow_twilio_integration_informationNOT LIKEcall_completed^NQactive=true^x_8725_servicenow_twilio_integration_informationLIKEjavascript:gs.getUserID()^x_8725_servicenow_twilio_integration_informationNOT LIKEcall_completed');
+	var sdagent = gs.getUserID();
+	var calls_gr = new GlideRecord('new_call');
+	calls_gr.addQuery('u_twilio_active', true);
+	calls_gr.addQuery('u_twilio_assigned_to', sdagent);
+	calls_gr.addQuery('u_twilio_int_informationNOT LIKEcall_completed');
+
 	calls_gr.orderBy('number');
 	calls_gr.query();
 	
@@ -104,33 +107,38 @@
 		var call ={};
 		call.sys_id = calls_gr.getValue('sys_id');
 		call.number = calls_gr.getValue('number');
-		call.caller = calls_gr.caller_id.getDisplayValue();
-		call.url ='/new_call.do?sys_id='+calls_gr.sys_id;
-		call.added_class ='';
+		call.caller = calls_gr.caller.getDisplayValue();
+	call.url ='/new_call.do?sys_id='+calls_gr.sys_id;
+
+			
+			call.added_class ='';
 			if(data.calls.length==0)
 				{
 				call.added_class = 'active';
 			}
 			data.calls.push(call);
+			
 		}
 		
 		
-	})();]]></script>
+	})();
+
+]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
-        <sys_created_by>admin</sys_created_by>
-        <sys_created_on>2019-06-27 21:16:47</sys_created_on>
+        <sys_created_by>vviswanathan</sys_created_by>
+        <sys_created_on>2021-06-03 17:19:16</sys_created_on>
         <sys_customer_update>false</sys_customer_update>
-        <sys_id>ce2bf769db1233006a0f924bdb9619d5</sys_id>
-        <sys_mod_count>15</sys_mod_count>
-        <sys_name>Twilio Flex Workspace</sys_name>
+        <sys_id>48d0c415db6cf49039d32d89139619c5</sys_id>
+        <sys_mod_count>34</sys_mod_count>
+        <sys_name>Twilio Flex Workspace Call Module</sys_name>
         <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
         <sys_policy/>
         <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
-        <sys_update_name>sp_widget_ce2bf769db1233006a0f924bdb9619d5</sys_update_name>
-        <sys_updated_by>hrajput</sys_updated_by>
-        <sys_updated_on>2021-05-27 19:30:14</sys_updated_on>
+        <sys_update_name>sp_widget_48d0c415db6cf49039d32d89139619c5</sys_update_name>
+        <sys_updated_by>vviswanathan</sys_updated_by>
+        <sys_updated_on>2021-06-08 21:16:00</sys_updated_on>
         <template><![CDATA[<div id="flex_area" class="left-div">
   <iframe id="flex_iframe" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" width="375px" height="100%" frameborder="0" ng-src="{{runtime_url}}" allow="microphone" style="padding-bottom: 1px; border: 1px solid #233659;border-radius: 5px !important;"></iframe>
 </div>
